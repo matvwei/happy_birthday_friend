@@ -1,11 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>С ДР ЕМАЕ!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            cursor: pointer;
+        }
+
+        #monkey {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            /* portrait photo: default to cover for narrow/phone screens */
+            object-fit: cover;
+            transform: scale(1);
+            transform-origin: center center;
+            transition: transform 0.35s ease-out;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        /* on wide/landscape (PC) screens "cover" leaves only a cropped center
+           strip visible, so switch to "contain" once the viewport is wider
+           relative to its height than the photo itself */
+        @media (min-aspect-ratio: 750/997) {
+            #monkey {
+                object-fit: contain;
+            }
+        }
+
+        .title {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            font-family: "Comic Sans MS", "Arial Rounded MT Bold", sans-serif;
+            font-size: 12vw;
+            font-weight: 900;
+            text-align: center;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+
+            background: linear-gradient(
+                90deg,
+                #ff0040, #ff8c00, #ffee00, #33ff00,
+                #00e0ff, #3b6bff, #b400ff, #ff0040
+            );
+            background-size: 400% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+
+            animation: rainbow 4s linear infinite, pulse 1.4s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.35);
+            pointer-events: none;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.08); }
+        }
+
+        #rickroll {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 100;
+            display: none;
+            opacity: 0;
+        }
+
+        #rickroll.fly-in {
+            display: block;
+            animation: flyIn 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes flyIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+            }
+            60% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.08) rotate(648deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) rotate(720deg);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .title {
+                font-size: 14vw;
+            }
+        }
+    </style>
 </head>
 <body>
-    
+    <img id="monkey" src="monkey.jpg" alt="monkey">
+    <div class="title">с др емае</div>
+    <video id="rickroll" src="Rick_Roll_Video_Meme_Template_V1.mp4" playsinline></video>
+
+    <script>
+        const monkey = document.getElementById('monkey');
+        const rickroll = document.getElementById('rickroll');
+        const fartSrc = 'fart-with-reverb.mp3';
+
+        const BASE_GROWTH_PERCENT = 3; // click 1 grows the image by 3%
+        const RICKROLL_CLICK = 5;
+
+        let clicks = 0;
+        let scale = 1;
+
+        function playFart() {
+            const audio = new Audio(fartSrc);
+            audio.play().catch(() => {});
+        }
+
+        function growMonkey() {
+            // the growth percentage doubles every click
+            const growthPercent = BASE_GROWTH_PERCENT * Math.pow(2, clicks - 1);
+            scale *= 1 + growthPercent / 100;
+            monkey.style.transform = `scale(${scale})`;
+        }
+
+        function launchRickroll() {
+            rickroll.classList.add('fly-in');
+            rickroll.currentTime = 0;
+            rickroll.muted = false;
+            rickroll.play().catch(() => {});
+        }
+
+        document.addEventListener('click', () => {
+            if (rickroll.classList.contains('fly-in')) return;
+
+            clicks++;
+            playFart();
+            growMonkey();
+
+            if (clicks >= RICKROLL_CLICK) {
+                launchRickroll();
+            }
+        });
+    </script>
 </body>
 </html>
