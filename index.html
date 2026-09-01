@@ -28,8 +28,12 @@
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            filter: blur(45px) brightness(0.55);
-            transform: scale(1.15);
+            /* blur fades to transparent right at the element's own edge, so
+               the box must be scaled up far more than the blur radius itself
+               (in px) or that fade shows through as translucent edges on
+               narrow phone screens */
+            filter: blur(28px) brightness(0.55);
+            transform: scale(1.5);
             z-index: 0;
             user-select: none;
             -webkit-user-drag: none;
@@ -111,8 +115,10 @@
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            filter: blur(45px) brightness(0.55);
-            transform: scale(1.15);
+            /* same reasoning as #monkeyBg: bigger overscale + smaller blur
+               radius so the transparent fade at the edge never shows */
+            filter: blur(28px) brightness(0.55);
+            transform: scale(1.5);
             z-index: 99;
             display: none;
             opacity: 0;
@@ -141,9 +147,9 @@
             z-index: 100;
             display: none;
             opacity: 0;
-            /* keeps it centered as its width grows, same trick as #monkey's scale */
-            translate: -50% -50%;
-            rotate: 0deg;
+            /* single combined `transform` (not the separate translate/rotate
+               properties) keeps this centered reliably on mobile browsers */
+            transform: translate(-50%, -50%) rotate(0deg);
         }
 
         #rickroll.fly-in {
@@ -156,7 +162,7 @@
             0% {
                 opacity: 0;
                 width: 10px;
-                rotate: 0deg;
+                transform: translate(-50%, -50%) rotate(0deg);
             }
             2.5% {
                 /* pops fully visible almost instantly (0.1s of the 4s animation) */
@@ -165,7 +171,7 @@
             100% {
                 opacity: 1;
                 width: 100vw;
-                rotate: 720deg;
+                transform: translate(-50%, -50%) rotate(720deg);
             }
         }
 
