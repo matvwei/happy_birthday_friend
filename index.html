@@ -19,6 +19,23 @@
             cursor: pointer;
         }
 
+        /* blurred, oversized copy of the same photo sitting behind #monkey —
+           fills the black bars that "contain" leaves on wide screens */
+        #monkeyBg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            filter: blur(45px) brightness(0.55);
+            transform: scale(1.15);
+            z-index: 0;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+
         #monkey {
             position: fixed;
             top: 0;
@@ -30,13 +47,15 @@
             transform: scale(1);
             transform-origin: center center;
             transition: transform 0.35s ease-out;
+            z-index: 1;
             user-select: none;
             -webkit-user-drag: none;
         }
 
         /* on wide/landscape (PC) screens "cover" leaves only a cropped center
            strip visible, so switch to "contain" once the viewport is wider
-           relative to its height than the photo itself */
+           relative to its height than the photo itself — that keeps the whole
+           photo fitted vertically, letting #monkeyBg show through the sides */
         @media (min-aspect-ratio: 750/997) {
             #monkey {
                 object-fit: contain;
@@ -45,9 +64,9 @@
 
         .title {
             position: fixed;
-            top: 50%;
+            bottom: 10%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             z-index: 5;
             font-family: "Comic Sans MS", "Arial Rounded MT Bold", sans-serif;
             font-size: 12vw;
@@ -79,39 +98,74 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.08); }
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.08); }
+        }
+
+        /* blurred, muted, fullscreen duplicate of the rickroll clip — fills
+           whatever the width-sized main video leaves empty top/bottom */
+        #rickrollBg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            filter: blur(45px) brightness(0.55);
+            transform: scale(1.15);
+            z-index: 99;
+            display: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* stays invisible through most of the main video's growth, then
+           fades in over its last second so it's fully visible exactly when
+           the main video finishes growing */
+        #rickrollBg.show {
+            display: block;
+            animation: bgFadeIn 1s ease-out 3s forwards;
+        }
+
+        @keyframes bgFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         #rickroll {
             position: fixed;
             top: 50%;
             left: 50%;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
+            width: 10px;
+            height: auto;
             z-index: 100;
             display: none;
             opacity: 0;
+            /* keeps it centered as its width grows, same trick as #monkey's scale */
+            translate: -50% -50%;
+            rotate: 0deg;
         }
 
         #rickroll.fly-in {
             display: block;
-            animation: flyIn 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            /* linear timing = perfectly uniform growth and spin the whole 4s */
+            animation: flyInGrow 4s linear forwards;
         }
 
-        @keyframes flyIn {
+        @keyframes flyInGrow {
             0% {
                 opacity: 0;
-                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                width: 10px;
+                rotate: 0deg;
             }
-            60% {
+            2.5% {
+                /* pops fully visible almost instantly (0.1s of the 4s animation) */
                 opacity: 1;
-                transform: translate(-50%, -50%) scale(1.08) rotate(648deg);
             }
             100% {
                 opacity: 1;
-                transform: translate(-50%, -50%) scale(1) rotate(720deg);
+                width: 100vw;
+                rotate: 720deg;
             }
         }
 
@@ -123,13 +177,16 @@
     </style>
 </head>
 <body>
+    <img id="monkeyBg" src="monkey.jpg" alt="" aria-hidden="true">
     <img id="monkey" src="monkey.jpg" alt="monkey">
     <div class="title">с др емае</div>
-    <video id="rickroll" src="Rick_Roll_Video_Meme_Template_V1.mp4" playsinline></video>
+    <video id="rickrollBg" src="Rick_Roll_Video_Meme_Template_V1.mp4" playsinline loop muted></video>
+    <video id="rickroll" src="Rick_Roll_Video_Meme_Template_V1.mp4" playsinline loop></video>
 
     <script>
         const monkey = document.getElementById('monkey');
         const rickroll = document.getElementById('rickroll');
+        const rickrollBg = document.getElementById('rickrollBg');
         const fartSrc = 'fart-with-reverb.mp3';
 
         const BASE_GROWTH_PERCENT = 3; // click 1 grows the image by 3%
@@ -151,6 +208,10 @@
         }
 
         function launchRickroll() {
+            rickrollBg.classList.add('show');
+            rickrollBg.currentTime = 0;
+            rickrollBg.play().catch(() => {});
+
             rickroll.classList.add('fly-in');
             rickroll.currentTime = 0;
             rickroll.muted = false;
